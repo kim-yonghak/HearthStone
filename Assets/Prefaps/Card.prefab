@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5212117853510085146}
   - component: {fileID: 5212117853510085149}
   - component: {fileID: 5212117853510085148}
+  - component: {fileID: 1133398388}
   m_Layer: 0
   m_Name: Card
   m_TagString: Untagged
@@ -137,6 +138,39 @@ MonoBehaviour:
   - {fileID: 5212117854315781674}
   - {fileID: 5212117854924751021}
   sortingLayerName: 
+--- !u!60 &1133398388
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5212117853510085145}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 2.9375, y: 3.875}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: -1.46875, y: 1.9375}
+      - {x: -1.46875, y: -1.9375}
+      - {x: -0.6953796, y: -1.9375001}
+      - {x: -0.5815035, y: -2.573043}
+      - {x: 0.5933205, y: -2.5661345}
+      - {x: 0.6954736, y: -1.9375001}
+      - {x: 1.46875, y: -1.9375}
+      - {x: 1.46875, y: 1.9375}
 --- !u!1 &5212117854315781687
 GameObject:
   m_ObjectHideFlags: 0
@@ -193,7 +227,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -8824430539330041636, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
+  - {fileID: 2100000, guid: 84e542d3289252349b0e17e2cbe68c7c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -240,7 +274,7 @@ MonoBehaviour:
 '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
-  m_sharedMaterial: {fileID: -8824430539330041636, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 84e542d3289252349b0e17e2cbe68c7c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -447,7 +481,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -8824430539330041636, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
+  - {fileID: 2100000, guid: 84e542d3289252349b0e17e2cbe68c7c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -494,7 +528,7 @@ MonoBehaviour:
 '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
-  m_sharedMaterial: {fileID: -8824430539330041636, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 84e542d3289252349b0e17e2cbe68c7c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -619,7 +653,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -8824430539330041636, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
+  - {fileID: 2100000, guid: 84e542d3289252349b0e17e2cbe68c7c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -666,7 +700,7 @@ MonoBehaviour:
 '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
-  m_sharedMaterial: {fileID: -8824430539330041636, guid: e1a1df7206ae7e947b0e2f1a2e547fbd, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 84e542d3289252349b0e17e2cbe68c7c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
