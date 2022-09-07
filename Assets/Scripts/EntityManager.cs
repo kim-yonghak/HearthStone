@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class EntityManager : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class EntityManager : MonoBehaviour
     void Awake() => Inst = this;
 
     [SerializeField] GameObject entityPrefab;
+    [SerializeField] GameObject TargetPicker;
+    [SerializeField] GameObject damagePrefab;
     [SerializeField] List<Entity> myEntities;
     [SerializeField] List<Entity> otherEntities;
     [SerializeField] Entity myEmptyEntity;
@@ -17,10 +20,15 @@ public class EntityManager : MonoBehaviour
     const int MAX_ENTITY_COUNT = 6;
     public bool IsFullMyEntities => myEntities.Count >= MAX_ENTITY_COUNT && !ExistMyEmptyEntity;
     bool IsFullOtherEntities => otherEntities.Count >= MAX_ENTITY_COUNT;
+    bool ExistTargetPickEntity => targetPickEntity != null;
     bool ExistMyEmptyEntity => myEntities.Exists(x => x == myEmptyEntity);
     int myEmptyEntityIndex => myEntities.FindIndex(x => x == myEmptyEntity);
+    bool CanMouseInput => TurnManager.Inst.myTurn && !TurnManager.Inst.isLoading;
 
+    Entity selectEntity;
+    Entity targetPickEntity;
     WaitForSeconds delay1 = new WaitForSeconds(1);
+    WaitForSeconds delay2 = new WaitForSeconds(2);
 
     void Start()
     {
@@ -34,8 +42,15 @@ public class EntityManager : MonoBehaviour
 
     void OnTurnStarted(bool myTurn)
     {
+        AttackableReset(myTurn);
+
         if(!myTurn)
             StartCoroutine(AICo());
+    }
+
+    void Update() 
+    {
+        ShowTargetPicker(ExistTargetPickEntity);
     }
 
     IEnumerator AICo()
@@ -43,6 +58,27 @@ public class EntityManager : MonoBehaviour
         CardManager.Inst.TryPutCard(false);
         yield return delay1;
 
+        var attackers = new List<Entity>(otherEntities.FindAll(x => x.attackable == true));
+        for(int i = 0; i < attackers.Count; i++)
+        {
+            int rand = Random.Range(i, attackers.Count);
+            Entity temp = attackers[i];
+            attackers[i] = attackers[rand];
+            attackers[rand] = temp;
+        }
+
+        foreach(var attacker in attackers)
+        {
+            var defenders = new List<Entity>(myEntities);
+            defenders.Add(myBossEntity);
+            int rand = Random.Range(0, defenders.Count);
+            Attack(attacker, defenders[rand]);
+
+            if(TurnManager.Inst.isLoading)
+                yield break;
+
+            yield return new WaitForSeconds(2);
+        }
         TurnManager.Inst.EndTurn();
     }
 
@@ -115,5 +151,135 @@ public class EntityManager : MonoBehaviour
         EntityAlignment(isMine);
 
         return true;
+    }
+
+    public void EntityMouseDown(Entity entity)
+    {
+        if(!CanMouseInput) 
+            return;
+
+        selectEntity = entity;
+    }
+
+    public void EntityMouseUp()
+    {
+        if(!CanMouseInput)
+            return;
+
+        // 둘다 존재하면 공격하고 바로 null로 만든다.
+        if(selectEntity && targetPickEntity && selectEntity.attackable)
+            Attack(selectEntity, targetPickEntity);
+
+        selectEntity = null;
+        targetPickEntity = null;
+    }
+
+    public void EntityMouseDrag()
+    {
+        if(!CanMouseInput || selectEntity == null)
+            return;
+
+        // 타겟 엔티티 찾기
+        bool existTarget = false;
+        foreach(var hit in Physics2D.RaycastAll(Utils.MousePos, Vector3.forward))
+        {
+            Entity entity = hit.collider?.GetComponent<Entity>();
+            if(entity != null && !entity.isMine && selectEntity.attackable)
+            {
+                targetPickEntity = entity;
+                existTarget = true;
+                break;
+            }
+        }
+        if(!existTarget)
+            targetPickEntity = null;
+    }
+
+    void Attack(Entity attacker, Entity defender)
+    {
+        //공격자의 위치를 방어자의 위치로 이동, 이때 order는 방어자보다 위에 위치
+        attacker.attackable = false;
+        attacker.GetComponent<Order>().SetMostFrontOrder(true);
+
+        Sequence sequence = DOTween.Sequence()
+            .Append(attacker.transform.DOMove(defender.originPos, 0.4f)).SetEase(Ease.InSine)
+            .AppendCallback(() =>
+            {
+                attacker.Damaged(defender.attack);
+                defender.Damaged(attacker.attack);
+                SpawnDamage(defender.attack, attacker.transform);
+                SpawnDamage(attacker.attack, defender.transform);
+                //데미지 주고 받기
+            })
+            .Append(attacker.transform.DOMove(attacker.originPos, 0.4f)).SetEase(Ease.OutSine)
+            .OnComplete(() => AttackCallBack(attacker, defender)); //죽음처리
+    }
+
+    void AttackCallBack(params Entity[] entities)
+    {
+        // 죽을 대상 고르기
+        entities[0].GetComponent<Order>().SetMostFrontOrder(false);
+
+        foreach(var entity in entities)
+        {
+            if(!entity.isDie || entity.isBossOrEmpty)
+                continue;
+            
+            if(entity.isMine)
+                myEntities.Remove(entity);
+            else   
+                otherEntities.Remove(entity);
+
+            Sequence sequence = DOTween.Sequence()
+            .Append(entity.transform.DOShakePosition(1.3f))
+            .Append(transform.DOScale(Vector3.zero, 0.3f)).SetEase(Ease.OutCirc)
+            .OnComplete(() =>
+            {
+                EntityAlignment(entity.isMine);
+                Destroy(entity.gameObject);
+            });
+        }
+        StartCoroutine(CheckBossDie());
+    }
+
+    IEnumerator CheckBossDie()
+    {
+        yield return delay2;
+
+        if(myBossEntity.isDie)
+            StartCoroutine(GameManager.Inst.GameOver(false));
+        
+        if(otherBossEntity.isDie)
+            StartCoroutine(GameManager.Inst.GameOver(true));
+    }
+    
+    public void DamageBoss(bool isMine, int damage)
+    {
+        var targetBossEntity = isMine ? myBossEntity : otherBossEntity;
+        targetBossEntity.Damaged(damage);
+        StartCoroutine(CheckBossDie());
+    }
+
+    void ShowTargetPicker(bool isShow)
+    {
+        TargetPicker.SetActive(isShow);
+        if(ExistTargetPickEntity)
+            TargetPicker.transform.position = targetPickEntity.transform.position;
+    }
+
+    void SpawnDamage(int damage, Transform tr)
+    {
+        if(damage <= 0)
+            return;
+
+        var damageComponent = Instantiate(damagePrefab).GetComponent<Damage>();
+        damageComponent.SetupTransform(tr);
+        damageComponent.Damaged(damage);
+    }
+
+    public void AttackableReset(bool isMine)
+    {
+        var targetEntities = isMine ? myEntities : otherEntities;
+        targetEntities.ForEach(x => x.attackable = true);
     }
 }

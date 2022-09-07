@@ -17,7 +17,9 @@ public class Entity : MonoBehaviour
     public int attack;
     public int health;
     public bool isMine;
+    public bool isDie;
     public bool isBossOrEmpty;
+    public bool attackable;
     public Vector3 originPos;
     int liveCount;
 
@@ -60,5 +62,36 @@ public class Entity : MonoBehaviour
             transform.DOMove(pos, dotweenTime);
         else
             transform.position = pos;
+    }
+
+    void OnMouseDown() 
+    {
+        if (isMine)
+            EntityManager.Inst.EntityMouseDown(this);
+    }
+
+    void OnMouseUp() 
+    {
+        if (isMine)
+            EntityManager.Inst.EntityMouseUp();
+    }
+
+    void OnMouseDrag() 
+    {
+        if (isMine)
+            EntityManager.Inst.EntityMouseDrag();
+    }
+    
+    public bool Damaged(int damage)
+    {
+        health -= damage;
+        healthTMP.text = health.ToString();
+
+        if(health <= 0)
+        {
+            isDie = true;
+            return true;
+        }
+        return false;
     }
 }
